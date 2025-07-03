@@ -58,6 +58,9 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
   // Controller para entrada do usuário
   final _userInputController = TextEditingController();
 
+  // Tipo de transação selecionado
+  String _selectedTransactionType = 'PIX'; // PIX, CREDITO, DEBITO
+
   @override
   void initState() {
     super.initState();
@@ -95,6 +98,20 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
     }
   }
 
+  // Obtém o código da função baseado no tipo de transação
+  int _getFunctionCode(String transactionType) {
+    switch (transactionType.toUpperCase()) {
+      case 'CREDITO':
+        return 3; // Venda a crédito
+      case 'DEBITO':
+        return 4; // Venda a débito
+      case 'PIX':
+        return 122; // Carteira Digital (PIX)
+      default:
+        return 122; // PIX como padrão
+    }
+  }
+
   Future<void> _executeTransaction() async {
     if (_service == null || !_service!.isInitialized) {
       _showMessage('Serviço não inicializado');
@@ -104,7 +121,7 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
     setState(() {
       _isLoading = true;
       _isInTransaction = true;
-      _statusMessage = 'Iniciando transação...';
+      _statusMessage = 'Iniciando transação $_selectedTransactionType...';
       _currentMessage = '';
       _menuOptions = [];
       _selectedMenuOption = '';
@@ -113,7 +130,7 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
     });
 
     try {
-      final functionCode = int.tryParse(_functionCodeController.text) ?? 3;
+      final functionCode = _getFunctionCode(_selectedTransactionType);
       final amount = _amountController.text;
       final cupomFiscal = _cupomFiscalController.text;
       final operator = _operatorController.text;
@@ -764,18 +781,54 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: _functionCodeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Function Code',
-                        border: OutlineInputBorder(),
-                      ),
+
+                    // Seleção do tipo de transação
+                    const Text('Tipo de Transação:'),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => setState(() => _selectedTransactionType = 'CREDITO'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedTransactionType == 'CREDITO' ? Colors.blue : null,
+                              foregroundColor: _selectedTransactionType == 'CREDITO' ? Colors.white : null,
+                            ),
+                            child: const Text('CRÉDITO'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => setState(() => _selectedTransactionType = 'DEBITO'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedTransactionType == 'DEBITO' ? Colors.blue : null,
+                              foregroundColor: _selectedTransactionType == 'DEBITO' ? Colors.white : null,
+                            ),
+                            child: const Text('DÉBITO'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => setState(() => _selectedTransactionType = 'PIX'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedTransactionType == 'PIX' ? Colors.blue : null,
+                              foregroundColor: _selectedTransactionType == 'PIX' ? Colors.white : null,
+                            ),
+                            child: const Text('PIX'),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
+                    Text('Tipo selecionado: $_selectedTransactionType (Código: ${_getFunctionCode(_selectedTransactionType)})'),
+                    const SizedBox(height: 16),
+
                     TextField(
                       controller: _amountController,
                       decoration: const InputDecoration(
-                        labelText: 'Amount',
+                        labelText: 'Valor (R\$)',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -783,7 +836,7 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
                     TextField(
                       controller: _cupomFiscalController,
                       decoration: const InputDecoration(
-                        labelText: 'Tax Invoice Number',
+                        labelText: 'Cupom Fiscal',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -791,7 +844,7 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
                     TextField(
                       controller: _operatorController,
                       decoration: const InputDecoration(
-                        labelText: 'Operator',
+                        labelText: 'Operador',
                         border: OutlineInputBorder(),
                       ),
                     ),

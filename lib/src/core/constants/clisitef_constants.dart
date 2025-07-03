@@ -1,4 +1,5 @@
-/// Constantes do CliSiTef baseadas na especificação oficial
+// ignore_for_file: constant_identifier_names
+
 class CliSiTefConstants {
   // URLs e Endpoints
   static const String DEFAULT_BASE_URL = 'https://127.0.0.1/agente';
