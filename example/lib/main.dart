@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:agente_clisitef/agente_clisitef.dart';
+import 'src/pages/pending_transaction_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +12,165 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CliSiTef SDK - Exemplo Totem',
+      title: 'CliSiTef SDK - Exemplos',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const TotemExamplePage(),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('CliSiTef SDK - Exemplos'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Escolha um exemplo para testar:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+
+            // Exemplo de Transação Normal
+            Card(
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TotemExamplePage(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.payment, color: Colors.blue, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Transação Normal',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                Text(
+                                  'Fluxo completo com finalização automática',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Demonstra o fluxo tradicional onde a transação é finalizada automaticamente após o processamento.',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Exemplo de Transação Pendente
+            Card(
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PendingTransactionPage(),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.pending_actions, color: Colors.orange, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Transação Pendente',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                Text(
+                                  'Controle manual de confirmação/cancelamento',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios, color: Colors.grey),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Demonstra o novo fluxo onde você inicia a transação, emite o cupom fiscal e depois decide se confirma ou cancela.',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Informações adicionais
+            Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sobre os Exemplos',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.blue.shade800,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '• Transação Normal: Fluxo tradicional com finalização automática\n'
+                      '• Transação Pendente: Novo fluxo com controle manual de confirmação\n'
+                      '• Ambos os exemplos demonstram integração com AgenteCliSiTef',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

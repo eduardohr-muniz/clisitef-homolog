@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
+import 'package:agente_clisitef/src/models/clisitef_response.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
 import 'package:agente_clisitef/src/models/transaction_response.dart';
 import 'package:agente_clisitef/src/models/transaction_result.dart';
@@ -8,6 +9,7 @@ import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository_impl.dart';
 import 'package:agente_clisitef/src/services/clisitef_core_service.dart';
 import 'package:agente_clisitef/src/services/clisitef_pinpad_service.dart';
+import 'package:agente_clisitef/src/services/core/start_transaction_usecase.dart';
 
 /// Serviço principal do CliSiTef para integração com AgenteCliSiTef
 class CliSiTefServiceAgente {
@@ -79,187 +81,33 @@ class CliSiTefServiceAgente {
 
       print('[CliSiTefAgente] Executando transação: ${data.functionId}');
 
-      // Iniciar transação
-      final startResponse = await _repository.startTransaction(data);
+      // Usar o use case para processar a transação
+      final useCase = StartTransactionUseCase(_repository);
+      final result = await useCase.execute(
+        data: data,
+        autoProcess: true,
+        stopBeforeFinish: false, // Transação normal finaliza automaticamente
+      );
 
-      if (!startResponse.isServiceSuccess) {
-        print('[CliSiTefAgente] Erro ao iniciar transação: ${startResponse.errorMessage}');
-        return TransactionResult.fromResponse(startResponse);
+      if (!result.isSuccess) {
+        print('[CliSiTefAgente] Erro na transação: ${result.errorMessage}');
+        return TransactionResult.fromResponse(result.response);
       }
 
-      // Processar fluxo iterativo se necessário
-      if (startResponse.shouldContinue) {
-        print('[CliSiTefAgente] Transação iniciada, processando fluxo iterativo...');
-        final continueResult = await _processIterativeFlow(startResponse);
-        return continueResult;
+      if (result.isCompleted) {
+        print('[CliSiTefAgente] Transação executada com sucesso');
+        return TransactionResult.fromResponse(result.response);
       }
 
-      // Transação concluída com sucesso
-      print('[CliSiTefAgente] Transação executada com sucesso');
-      return TransactionResult.fromResponse(startResponse);
+      // Caso pendente (não deveria acontecer no serviço normal)
+      print('[CliSiTefAgente] Transação pendente inesperada');
+      return TransactionResult.fromResponse(result.response);
     } catch (e) {
       print('[CliSiTefAgente] Erro inesperado na transação: $e');
       return TransactionResult.error(
         statusCode: CliSiTefConstants.TRANSACTION_INTERNAL_ERROR,
         message: 'Erro interno: $e',
       );
-    }
-  }
-
-  /// Processa o fluxo iterativo da transação
-  Future<TransactionResult> _processIterativeFlow(TransactionResponse initialResponse) async {
-    try {
-      TransactionResponse currentResponse = initialResponse;
-      String? sessionId = currentResponse.sessionId ?? _currentSessionId;
-
-      if (sessionId == null) {
-        return TransactionResult.error(
-          statusCode: CliSiTefConstants.ERROR_MISSING_PARAMETER,
-          message: 'SessionId não encontrado',
-        );
-      }
-
-      // Loop de processamento iterativo
-      while (currentResponse.shouldContinue) {
-        print('[CliSiTefAgente] Processando comando: ${currentResponse.command}');
-
-        // Se não há comando específico, continuar sem dados
-        if (currentResponse.command == null) {
-          print('[CliSiTefAgente] Continuando transação sem comando específico...');
-          currentResponse = await _repository.continueTransaction(
-            sessionId: sessionId,
-            command: CliSiTefConstants.COMMAND_DISPLAY_MESSAGE,
-          );
-        } else {
-          // Processar comando específico
-          final commandResult = await _processCommand(currentResponse, sessionId);
-
-          if (commandResult != null) {
-            // Enviar dados coletados
-            currentResponse = await _repository.continueTransaction(
-              sessionId: sessionId,
-              command: currentResponse.command!,
-              data: commandResult,
-            );
-          } else {
-            // Comando não processado, continuar sem dados
-            currentResponse = await _repository.continueTransaction(
-              sessionId: sessionId,
-              command: currentResponse.command!,
-            );
-          }
-        }
-
-        if (!currentResponse.isServiceSuccess) {
-          print('[CliSiTefAgente] Erro no fluxo iterativo: ${currentResponse.errorMessage}');
-          return TransactionResult.fromResponse(currentResponse);
-        }
-      }
-
-      // Finalizar transação
-      final finishResponse = await _repository.finishTransaction(
-        sessionId: sessionId,
-        confirm: true,
-      );
-
-      if (!finishResponse.isServiceSuccess) {
-        print('[CliSiTefAgente] Erro ao finalizar transação: ${finishResponse.errorMessage}');
-        return TransactionResult.fromResponse(finishResponse);
-      }
-
-      print('[CliSiTefAgente] Transação finalizada com sucesso');
-      return TransactionResult.fromResponse(finishResponse);
-    } catch (e) {
-      print('[CliSiTefAgente] Erro no fluxo iterativo: $e');
-      return TransactionResult.error(
-        statusCode: CliSiTefConstants.ERROR_ITERATIVE_EXECUTION,
-        message: 'Erro no fluxo iterativo: $e',
-      );
-    }
-  }
-
-  /// Processa um comando específico
-  Future<String?> _processCommand(TransactionResponse response, String sessionId) async {
-    try {
-      // Se não há comando, não há nada para processar
-      if (response.command == null) {
-        print('[CliSiTefAgente] Nenhum comando para processar');
-        return null;
-      }
-
-      switch (response.command) {
-        case CliSiTefConstants.COMMAND_DISPLAY_MESSAGE:
-          print('[CliSiTefAgente] Exibindo mensagem: ${response.message}');
-          // Em um totem real, exibir a mensagem na tela
-          return null; // Não precisa retornar dados
-
-        case CliSiTefConstants.COMMAND_COLLECT_AMOUNT:
-          print('[CliSiTefAgente] Coletando valor monetário: ${response.message}');
-          // Em um totem real, exibir campo monetário
-          return '10,00'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_OPERATOR:
-          print('[CliSiTefAgente] Coletando operador: ${response.message}');
-          // Em um totem real, exibir campo de operador
-          return 'CAIXA'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_CUPOM:
-          print('[CliSiTefAgente] Coletando cupom fiscal: ${response.message}');
-          // Em um totem real, exibir campo de cupom
-          return '123456'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_DATE:
-          print('[CliSiTefAgente] Coletando data: ${response.message}');
-          // Em um totem real, exibir campo de data
-          return '20241201'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_TIME:
-          print('[CliSiTefAgente] Coletando hora: ${response.message}');
-          // Em um totem real, exibir campo de hora
-          return '1430'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_PASSWORD:
-          print('[CliSiTefAgente] Coletando senha: ${response.message}');
-          // Em um totem real, exibir campo de senha
-          return '1234'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_CARD:
-          print('[CliSiTefAgente] Coletando cartão: ${response.message}');
-          // Em um totem real, exibir instruções para cartão
-          return null; // Não precisa retornar dados
-
-        case CliSiTefConstants.COMMAND_COLLECT_YES_NO:
-          print('[CliSiTefAgente] Coletando confirmação: ${response.message}');
-          // Em um totem real, exibir opções Sim/Não
-          return 'S'; // Mock - em produção seria seleção do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_MENU:
-          print('[CliSiTefAgente] Coletando opção do menu: ${response.message}');
-          // Em um totem real, exibir menu de opções
-          return '1'; // Mock - em produção seria seleção do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_FLOAT:
-          print('[CliSiTefAgente] Coletando valor com ponto flutuante: ${response.message}');
-          // Em um totem real, exibir campo com ponto flutuante
-          return '10.50'; // Mock - em produção seria input do usuário
-
-        case CliSiTefConstants.COMMAND_COLLECT_CARD_READER:
-          print('[CliSiTefAgente] Coletando dados do leitor de cartão: ${response.message}');
-          // Em um totem real, aguardar leitura do cartão
-          return null; // Não precisa retornar dados
-
-        case CliSiTefConstants.COMMAND_COLLECT_YES_NO_EXTENDED:
-          print('[CliSiTefAgente] Coletando confirmação estendida: ${response.message}');
-          // Em um totem real, exibir opções Sim/Não
-          return 'S'; // Mock - em produção seria seleção do usuário
-
-        default:
-          print('[CliSiTefAgente] Comando desconhecido: ${response.command}');
-          return null; // Comando não reconhecido
-      }
-    } catch (e) {
-      print('[CliSiTefAgente] Erro ao processar comando: $e');
-      return null; // Indica erro no processamento
     }
   }
 

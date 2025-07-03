@@ -54,7 +54,7 @@ class TransactionResponse {
       sessionId: json[CliSiTefConstants.RESPONSE_SESSION_ID],
       serviceState: json[CliSiTefConstants.RESPONSE_SERVICE_STATE],
       command: json['command'] ?? json['commandId'], // Suporta ambos os campos
-      fieldType: json['fieldType'],
+      fieldType: json['fieldType'] ?? json['fieldId'], // Suporta ambos os campos
       buffer: json['buffer'] ?? json['data'], // Suporta ambos os campos
       message: json['message'] ?? json['data'], // Suporta ambos os campos
       additionalData: Map<String, dynamic>.from(json),

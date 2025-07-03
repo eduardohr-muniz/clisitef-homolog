@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
-import 'package:agente_clisitef/src/models/transaction_data.dart';
-import 'package:agente_clisitef/src/models/transaction_response.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 
 /// Resultado da leitura de cartão

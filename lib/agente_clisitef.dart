@@ -11,6 +11,7 @@ export 'src/models/clisitef_config.dart';
 export 'src/models/transaction_data.dart';
 export 'src/models/transaction_response.dart';
 export 'src/models/transaction_result.dart';
+export 'src/models/pending_transaction.dart';
 
 // Repositories
 export 'src/repositories/clisitef_repository.dart';
@@ -20,3 +21,5 @@ export 'src/repositories/clisitef_repository_impl.dart';
 export 'src/services/clisitef_core_service.dart';
 export 'src/services/clisitef_pinpad_service.dart';
 export 'src/services/clisitef_service_agente.dart';
+export 'src/services/clisitef_service_pending.dart';
+export 'src/services/core/start_transaction_usecase.dart';
