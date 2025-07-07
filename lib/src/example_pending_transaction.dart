@@ -1,7 +1,7 @@
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
 import 'package:agente_clisitef/src/models/pending_transaction.dart';
-import 'package:agente_clisitef/src/services/clisitef_service_pending.dart';
+import 'package:agente_clisitef/src/services/clisitef_service_captura_tardia.dart';
 
 /// Exemplo prático de uso do CliSiTefServicePending
 /// Demonstra como iniciar uma transação e confirmar/cancelar posteriormente
@@ -17,7 +17,7 @@ class ExamplePendingTransaction {
       terminalId: 'T001',
     );
 
-    final service = CliSiTefServicePending(config: config);
+    final service = CliSiTefServiceCapturaTardia(config: config);
 
     try {
       // 2. Inicializar o serviço
@@ -122,7 +122,7 @@ class ExamplePendingTransaction {
       terminalId: 'PDV001',
     );
 
-    final service = CliSiTefServicePending(config: config);
+    final service = CliSiTefServiceCapturaTardia(config: config);
 
     try {
       // Inicializar
@@ -188,7 +188,7 @@ class ExamplePendingTransaction {
       terminalId: 'T002',
     );
 
-    final service = CliSiTefServicePending(config: config);
+    final service = CliSiTefServiceCapturaTardia(config: config);
     PendingTransaction? transacaoPendente;
 
     try {
@@ -248,7 +248,7 @@ class ExamplePendingTransaction {
       terminalId: 'TOTEM001',
     );
 
-    final service = CliSiTefServicePending(config: config);
+    final service = CliSiTefServiceCapturaTardia(config: config);
 
     try {
       await service.initialize();

@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/clisitef_response.dart';
 import 'package:agente_clisitef/src/models/pending_transaction.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
-import 'package:agente_clisitef/src/models/transaction_response.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository_impl.dart';
 import 'package:agente_clisitef/src/services/clisitef_core_service.dart';
@@ -13,7 +11,7 @@ import 'package:agente_clisitef/src/services/core/start_transaction_usecase.dart
 
 /// Serviço para transações pendentes de confirmação
 /// Permite iniciar uma transação e decidir posteriormente se confirmar ou cancelar
-class CliSiTefServicePending {
+class CliSiTefServiceCapturaTardia {
   late final CliSiTefRepository _repository;
   late final CliSiTefCoreService _coreService;
   late final CliSiTefPinPadService _pinpadService;
@@ -22,7 +20,7 @@ class CliSiTefServicePending {
   bool _isInitialized = false;
   String? _currentSessionId;
 
-  CliSiTefServicePending({
+  CliSiTefServiceCapturaTardia({
     required CliSiTefConfig config,
     CliSiTefRepository? repository,
   }) : _config = config {
