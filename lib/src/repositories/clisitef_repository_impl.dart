@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
 import 'package:agente_clisitef/src/core/exceptions/clisitef_exception.dart';
+import 'package:agente_clisitef/src/core/exceptions/clisitef_error_codes.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
 import 'package:agente_clisitef/src/models/transaction_response.dart';
@@ -88,14 +88,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao iniciar transação', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao iniciar transação: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao iniciar transação', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao iniciar transação: $e',
         originalError: e,
       );
@@ -135,14 +135,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao continuar transação', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao continuar transação: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao continuar transação', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao continuar transação: $e',
         originalError: e,
       );
@@ -198,14 +198,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao finalizar transação', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao finalizar transação: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao finalizar transação', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao finalizar transação: $e',
         originalError: e,
       );
@@ -237,14 +237,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao criar sessão', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao criar sessão: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao criar sessão', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao criar sessão: $e',
         originalError: e,
       );
@@ -270,14 +270,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao consultar sessão', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao consultar sessão: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao consultar sessão', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao consultar sessão: $e',
         originalError: e,
       );
@@ -303,14 +303,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao excluir sessão', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao excluir sessão: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao excluir sessão', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao excluir sessão: $e',
         originalError: e,
       );
@@ -332,14 +332,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao consultar estado', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao consultar estado: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao consultar estado', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao consultar estado: $e',
         originalError: e,
       );
@@ -364,14 +364,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao consultar versão', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao consultar versão: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao consultar versão', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao consultar versão: $e',
         originalError: e,
       );
@@ -397,14 +397,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao abrir PinPad', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao abrir PinPad: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao abrir PinPad', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao abrir PinPad: $e',
         originalError: e,
       );
@@ -430,14 +430,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao fechar PinPad', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao fechar PinPad: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao fechar PinPad', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao fechar PinPad: $e',
         originalError: e,
       );
@@ -463,14 +463,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao verificar presença do PinPad', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao verificar presença do PinPad: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao verificar presença do PinPad', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao verificar presença do PinPad: $e',
         originalError: e,
       );
@@ -502,14 +502,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao ler confirmação Sim/Não do PinPad', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao ler confirmação Sim/Não do PinPad: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao ler confirmação Sim/Não do PinPad', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao ler confirmação Sim/Não do PinPad: $e',
         originalError: e,
       );
@@ -541,14 +541,14 @@ class CliSiTefRepositoryImpl implements CliSiTefRepository {
     } on DioException catch (e) {
       _talker.error('Erro ao definir mensagem do PinPad', e);
       throw CliSiTefException(
-        errorCode: e.response?.statusCode ?? -1,
+        errorCode: CliSiTefErrorCode.fromCode(e.response?.statusCode ?? -1),
         message: 'Erro ao definir mensagem do PinPad: ${e.message}',
         originalError: e,
       );
     } catch (e) {
       _talker.error('Erro inesperado ao definir mensagem do PinPad', e);
       throw CliSiTefException(
-        errorCode: -1,
+        errorCode: CliSiTefErrorCode.unknownError,
         message: 'Erro inesperado ao definir mensagem do PinPad: $e',
         originalError: e,
       );

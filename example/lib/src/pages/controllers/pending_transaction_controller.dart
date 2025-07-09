@@ -94,6 +94,18 @@ class PendingTransactionController extends ChangeNotifier {
 
       return pendingTransaction;
     } catch (e) {
+      if (e is CliSiTefException) {
+        if (e.isCancellation) {
+          if (e.isOperatorCancellation) {
+            print('Operador cancelou a operação');
+          } else if (e.isUserCancellation) {
+            print('Usuário cancelou no pinpad');
+          } else if (e.isAutomationCancellation) {
+            print('Sistema cancelou automaticamente');
+          }
+        }
+      }
+
       _setLoading(false);
       _updateStatus('Erro na transação pendente: $e');
       rethrow;
