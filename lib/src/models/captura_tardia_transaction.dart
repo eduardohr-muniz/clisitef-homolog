@@ -1,9 +1,10 @@
+import 'package:agente_clisitef/src/core/utils/format_utils.dart';
 import 'package:agente_clisitef/src/models/transaction_response.dart';
 import 'package:agente_clisitef/src/models/clisitef_response.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 
 /// Modelo para uma transação pendente de confirmação
-class PendingTransaction {
+class CapturaTardiaTransaction {
   /// ID da sessão da transação
   final String sessionId;
 
@@ -16,21 +17,27 @@ class PendingTransaction {
   /// Campos mapeados do CliSiTef
   final CliSiTefResponse clisitefFields;
 
+  final DateTime invoiceDate;
+
+  final DateTime invoiceTime;
+
   /// Indica se a transação já foi finalizada
   bool _isFinalized = false;
 
-  PendingTransaction({
+  CapturaTardiaTransaction({
     required this.sessionId,
     required this.response,
     required this.repository,
     required this.clisitefFields,
+    required this.invoiceDate,
+    required this.invoiceTime,
   });
 
   /// Confirma a transação
   Future<TransactionResponse> confirm({
     String? taxInvoiceNumber,
-    String? taxInvoiceDate,
-    String? taxInvoiceTime,
+    DateTime? taxInvoiceDate,
+    DateTime? taxInvoiceTime,
   }) async {
     if (_isFinalized) {
       throw Exception('Transação já foi finalizada');
@@ -39,12 +46,15 @@ class PendingTransaction {
     try {
       print('[PendingTransaction] Confirmando transação: $sessionId');
 
+      final fiscalDate = FormatUtils.formatDate(taxInvoiceDate ?? invoiceDate);
+      final fiscalTime = FormatUtils.formatTime(taxInvoiceTime ?? invoiceTime);
+
       final result = await repository.finishTransaction(
         sessionId: sessionId,
         confirm: true,
         taxInvoiceNumber: taxInvoiceNumber,
-        taxInvoiceDate: taxInvoiceDate,
-        taxInvoiceTime: taxInvoiceTime,
+        taxInvoiceDate: fiscalDate,
+        taxInvoiceTime: fiscalTime,
       );
 
       if (result.isServiceSuccess) {
@@ -64,8 +74,8 @@ class PendingTransaction {
   /// Cancela a transação
   Future<TransactionResponse> cancel({
     String? taxInvoiceNumber,
-    String? taxInvoiceDate,
-    String? taxInvoiceTime,
+    DateTime? taxInvoiceDate,
+    DateTime? taxInvoiceTime,
   }) async {
     if (_isFinalized) {
       throw Exception('Transação já foi finalizada');
@@ -74,12 +84,15 @@ class PendingTransaction {
     try {
       print('[PendingTransaction] Cancelando transação: $sessionId');
 
+      final fiscalDate = FormatUtils.formatDate(taxInvoiceDate ?? invoiceDate);
+      final fiscalTime = FormatUtils.formatTime(taxInvoiceTime ?? invoiceTime);
+
       final result = await repository.finishTransaction(
         sessionId: sessionId,
         confirm: false,
         taxInvoiceNumber: taxInvoiceNumber,
-        taxInvoiceDate: taxInvoiceDate,
-        taxInvoiceTime: taxInvoiceTime,
+        taxInvoiceDate: fiscalDate,
+        taxInvoiceTime: fiscalTime,
       );
 
       if (result.isServiceSuccess) {

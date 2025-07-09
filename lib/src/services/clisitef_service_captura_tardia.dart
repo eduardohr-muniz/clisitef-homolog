@@ -3,7 +3,7 @@ import 'package:agente_clisitef/src/core/exceptions/clisitef_exception.dart';
 import 'package:agente_clisitef/src/core/exceptions/clisitef_error_codes.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/clisitef_response.dart';
-import 'package:agente_clisitef/src/models/pending_transaction.dart';
+import 'package:agente_clisitef/src/models/captura_tardia_transaction.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository_impl.dart';
@@ -87,7 +87,7 @@ class CliSiTefServiceCapturaTardia {
 
   /// Inicia uma transação e retorna um modelo pendente
   /// A transação NÃO é finalizada automaticamente
-  Future<PendingTransaction?> startPendingTransaction(TransactionData data) async {
+  Future<CapturaTardiaTransaction?> startPendingTransaction(TransactionData data) async {
     try {
       if (!_isInitialized) {
         print('[CliSiTefCapturaTardia] Serviço não inicializado');
@@ -131,11 +131,13 @@ class CliSiTefServiceCapturaTardia {
           originalError: result.response,
         );
       }
-      return PendingTransaction(
+      return CapturaTardiaTransaction(
         sessionId: result.response.sessionId ?? _currentSessionId!,
         response: result.response,
         repository: _repository,
         clisitefFields: result.clisitefFields ?? CliSiTefResponse(),
+        invoiceDate: data.taxInvoiceDate,
+        invoiceTime: data.taxInvoiceTime,
       );
     } catch (e) {
       print('[CliSiTefCapturaTardia] Erro inesperado na transação: $e');

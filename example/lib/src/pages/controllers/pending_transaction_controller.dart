@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:agente_clisitef/agente_clisitef.dart';
 import 'package:agente_clisitef/src/core/services/message_manager.dart';
+import 'package:agente_clisitef/src/core/utils/format_utils.dart';
 
 /// Controller responsável por gerenciar o estado e lógica das transações pendentes
 class PendingTransactionController extends ChangeNotifier {
@@ -11,7 +12,7 @@ class PendingTransactionController extends ChangeNotifier {
   bool _isLoading = false;
   String _sessionId = '';
   CliSiTefServiceCapturaTardia? _service;
-  PendingTransaction? _pendingTransaction;
+  CapturaTardiaTransaction? _pendingTransaction;
 
   // Configurações
   final TextEditingController serverIPController = TextEditingController(text: 'intranet5.wbagestao.com');
@@ -25,7 +26,7 @@ class PendingTransactionController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get sessionId => _sessionId;
   CliSiTefServiceCapturaTardia? get service => _service;
-  PendingTransaction? get pendingTransaction => _pendingTransaction;
+  CapturaTardiaTransaction? get pendingTransaction => _pendingTransaction;
   bool get isServiceInitialized => _service?.isInitialized ?? false;
   bool get hasPendingTransaction => _pendingTransaction != null;
   bool get isTransactionFinalized => _pendingTransaction?.isFinalized ?? false;
@@ -79,7 +80,7 @@ class PendingTransactionController extends ChangeNotifier {
   }
 
   /// Inicia uma transação pendente
-  Future<PendingTransaction?> startPendingTransaction(String transactionType) async {
+  Future<CapturaTardiaTransaction?> startPendingTransaction(String transactionType) async {
     if (!_validateService()) return null;
 
     _setLoading(true);
@@ -121,15 +122,15 @@ class PendingTransactionController extends ChangeNotifier {
   /// Cria os dados da transação
   TransactionData _createTransactionData(String transactionType) {
     final functionCode = getFunctionCode(transactionType);
-    const fiscalDate = '20180611';
-    const fiscalTime = '170000';
+    final now = DateTime.now();
+    final amount = double.tryParse(amountController.text) ?? 0.0;
 
     return TransactionData.payment(
       functionId: functionCode,
-      trnAmount: amountController.text,
+      trnAmount: amount,
       taxInvoiceNumber: cupomFiscalController.text,
-      taxInvoiceDate: fiscalDate,
-      taxInvoiceTime: fiscalTime,
+      taxInvoiceDate: now,
+      taxInvoiceTime: now,
       cashierOperator: operatorController.text,
     );
   }
@@ -177,10 +178,11 @@ class PendingTransactionController extends ChangeNotifier {
     _messageManager.messageCashier.value = 'Confirmando transação...';
 
     try {
+      final now = DateTime.now();
       final result = await _pendingTransaction!.confirm(
         taxInvoiceNumber: cupomFiscalController.text,
-        taxInvoiceDate: '20180611',
-        taxInvoiceTime: '170000',
+        taxInvoiceDate: now,
+        taxInvoiceTime: now,
       );
 
       _setLoading(false);
@@ -208,10 +210,11 @@ class PendingTransactionController extends ChangeNotifier {
     _messageManager.messageCashier.value = 'Cancelando transação...';
 
     try {
+      final now = DateTime.now();
       final result = await _pendingTransaction!.cancel(
         taxInvoiceNumber: cupomFiscalController.text,
-        taxInvoiceDate: '20180611',
-        taxInvoiceTime: '170000',
+        taxInvoiceDate: now,
+        taxInvoiceTime: now,
       );
 
       _setLoading(false);

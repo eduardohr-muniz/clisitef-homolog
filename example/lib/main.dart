@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:agente_clisitef/agente_clisitef.dart';
+import 'package:agente_clisitef/src/core/utils/format_utils.dart';
 import 'src/pages/pending_transaction_page.dart';
 
 void main() {
@@ -289,16 +290,16 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
       final cupomFiscal = _cupomFiscalController.text;
       final operator = _operatorController.text;
 
-      // Data e hora específicas do exemplo
-      const fiscalDate = '20180611';
-      const fiscalTime = '170000';
+      // Data e hora atuais
+      final now = DateTime.now();
+      final amountValue = double.tryParse(amount) ?? 0.0;
 
       final transactionData = TransactionData(
         functionId: functionCode,
-        trnAmount: amount,
+        trnAmount: amountValue,
         taxInvoiceNumber: cupomFiscal,
-        taxInvoiceDate: fiscalDate,
-        taxInvoiceTime: fiscalTime,
+        taxInvoiceDate: now,
+        taxInvoiceTime: now,
       );
 
       // Inicia a transação usando o repositório
@@ -656,8 +657,8 @@ class _TotemExamplePageState extends State<TotemExamplePage> {
         confirm: confirm,
         // Envia dados fiscais conforme homologação
         taxInvoiceNumber: _cupomFiscalController.text,
-        taxInvoiceDate: '20180611',
-        taxInvoiceTime: '170000',
+        taxInvoiceDate: FormatUtils.formatDate(DateTime.now()),
+        taxInvoiceTime: FormatUtils.formatTime(DateTime.now()),
       );
 
       setState(() {

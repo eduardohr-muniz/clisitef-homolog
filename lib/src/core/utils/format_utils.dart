@@ -39,6 +39,61 @@ class FormatUtils {
         '${time.second.toString().padLeft(2, '0')}';
   }
 
+  /// Converte string de data do padrão CliSiTef (AAAAMMDD) para DateTime
+  /// Retorna null se a string não estiver no formato correto
+  static DateTime? parseDate(String dateString) {
+    try {
+      if (dateString.length != 8) return null;
+
+      final year = int.parse(dateString.substring(0, 4));
+      final month = int.parse(dateString.substring(4, 6));
+      final day = int.parse(dateString.substring(6, 8));
+
+      return DateTime(year, month, day);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Converte string de horário do padrão CliSiTef (HHMMSS) para DateTime
+  /// Retorna null se a string não estiver no formato correto
+  static DateTime? parseTime(String timeString) {
+    try {
+      if (timeString.length != 6) return null;
+
+      final hour = int.parse(timeString.substring(0, 2));
+      final minute = int.parse(timeString.substring(2, 4));
+      final second = int.parse(timeString.substring(4, 6));
+
+      // Validação básica dos valores
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+        return null;
+      }
+
+      return DateTime(2000, 1, 1, hour, minute, second);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Converte string de data e hora do padrão CliSiTef para DateTime
+  /// Combina parseDate e parseTime em um único DateTime
+  static DateTime? parseDateTime(String dateString, String timeString) {
+    final date = parseDate(dateString);
+    final time = parseTime(timeString);
+
+    if (date == null || time == null) return null;
+
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+      time.second,
+    );
+  }
+
   /// Formata número do cupom fiscal (máximo 20 caracteres)
   static String formatFiscalCupon(String cupon) {
     if (cupon.length > CliSiTefConstants.MAX_CUPOM_LENGTH) {

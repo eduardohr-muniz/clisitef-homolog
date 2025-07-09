@@ -1,21 +1,22 @@
 import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
+import 'package:agente_clisitef/src/core/utils/format_utils.dart';
 
 /// Dados de uma transação CliSiTef para AgenteCliSiTef
 class TransactionData {
   /// Código da função (functionId)
   final int functionId;
 
-  /// Valor da transação (trnAmount) - formato: "0,00"
-  final String trnAmount;
+  /// Valor da transação (trnAmount) - formato: "0.00"
+  final double trnAmount;
 
   /// Número do cupom fiscal (taxInvoiceNumber)
   final String taxInvoiceNumber;
 
-  /// Data fiscal (taxInvoiceDate) - formato: AAAAMMDD
-  final String taxInvoiceDate;
+  /// Data fiscal (taxInvoiceDate)
+  final DateTime taxInvoiceDate;
 
-  /// Hora fiscal (taxInvoiceTime) - formato: HHMMSS
-  final String taxInvoiceTime;
+  /// Hora fiscal (taxInvoiceTime)
+  final DateTime taxInvoiceTime;
 
   /// Identificação do operador (cashierOperator)
   final String cashierOperator;
@@ -44,10 +45,10 @@ class TransactionData {
   /// Construtor para transação de pagamento
   factory TransactionData.payment({
     required int functionId,
-    required String trnAmount,
+    required double trnAmount,
     required String taxInvoiceNumber,
-    required String taxInvoiceDate,
-    required String taxInvoiceTime,
+    required DateTime taxInvoiceDate,
+    required DateTime taxInvoiceTime,
     String? cashierOperator,
     Map<String, String>? trnAdditionalParameters,
     Map<String, String>? trnInitParameters,
@@ -70,8 +71,8 @@ class TransactionData {
   factory TransactionData.administrative({
     required int functionId,
     required String taxInvoiceNumber,
-    required String taxInvoiceDate,
-    required String taxInvoiceTime,
+    required DateTime taxInvoiceDate,
+    required DateTime taxInvoiceTime,
     String? cashierOperator,
     Map<String, String>? trnAdditionalParameters,
     Map<String, String>? trnInitParameters,
@@ -79,7 +80,7 @@ class TransactionData {
   }) {
     return TransactionData(
       functionId: functionId,
-      trnAmount: "",
+      trnAmount: 0,
       taxInvoiceNumber: taxInvoiceNumber,
       taxInvoiceDate: taxInvoiceDate,
       taxInvoiceTime: taxInvoiceTime,
@@ -93,10 +94,10 @@ class TransactionData {
   /// Construtor usando sessionId (para transações subsequentes)
   factory TransactionData.withSession({
     required int functionId,
-    required String trnAmount,
+    required double trnAmount,
     required String taxInvoiceNumber,
-    required String taxInvoiceDate,
-    required String taxInvoiceTime,
+    required DateTime taxInvoiceDate,
+    required DateTime taxInvoiceTime,
     required String sessionId,
     String? cashierOperator,
     Map<String, String>? trnAdditionalParameters,
@@ -134,22 +135,13 @@ class TransactionData {
   }
 
   /// Converte para Map para requisições HTTP
-  Map<String, String> toMap() {
-    // Formata o valor para o formato esperado pelo servidor
-    String formattedAmount = trnAmount;
-    if (trnAmount.isNotEmpty) {
-      // Converte de "10,00" para "10.00" se necessário
-      if (trnAmount.contains(',')) {
-        formattedAmount = trnAmount.replaceAll(',', '.');
-      }
-    }
-
-    final map = <String, String>{
+  Map<String, dynamic> toMap() {
+    final map = <String, dynamic>{
       CliSiTefConstants.PARAM_FUNCTION_ID: functionId.toString(),
-      CliSiTefConstants.PARAM_TRN_AMOUNT: formattedAmount,
+      CliSiTefConstants.PARAM_TRN_AMOUNT: FormatUtils.formatAmount(trnAmount),
       CliSiTefConstants.PARAM_TAX_INVOICE_NUMBER: taxInvoiceNumber,
-      CliSiTefConstants.PARAM_TAX_INVOICE_DATE: taxInvoiceDate,
-      CliSiTefConstants.PARAM_TAX_INVOICE_TIME: taxInvoiceTime,
+      CliSiTefConstants.PARAM_TAX_INVOICE_DATE: FormatUtils.formatDate(taxInvoiceDate),
+      CliSiTefConstants.PARAM_TAX_INVOICE_TIME: FormatUtils.formatTime(taxInvoiceTime),
       CliSiTefConstants.PARAM_TRN_ADDITIONAL_PARAMETERS: trnAdditionalParametersString,
       CliSiTefConstants.PARAM_TRN_INIT_PARAMETERS: trnInitParametersString,
     };
@@ -171,14 +163,8 @@ class TransactionData {
     }
 
     // Validar valor (se não for transação gerencial)
-    if (functionId < 110 && trnAmount.isEmpty) {
+    if (functionId < 110 && trnAmount == 0) {
       errors.add('trnAmount é obrigatório para transações de pagamento');
-    }
-
-    if (trnAmount.isNotEmpty) {
-      if (!RegExp(r'^\d+,\d{2}$').hasMatch(trnAmount)) {
-        errors.add('trnAmount deve estar no formato "0,00"');
-      }
     }
 
     // Validar cupom fiscal
@@ -188,24 +174,6 @@ class TransactionData {
 
     if (taxInvoiceNumber.length > CliSiTefConstants.MAX_CUPOM_LENGTH) {
       errors.add('taxInvoiceNumber deve ter no máximo ${CliSiTefConstants.MAX_CUPOM_LENGTH} caracteres');
-    }
-
-    // Validar data fiscal
-    if (taxInvoiceDate.length != 8) {
-      errors.add('taxInvoiceDate deve ter 8 dígitos (AAAAMMDD)');
-    }
-
-    if (!RegExp(r'^\d{8}$').hasMatch(taxInvoiceDate)) {
-      errors.add('taxInvoiceDate deve conter apenas dígitos');
-    }
-
-    // Validar hora fiscal
-    if (taxInvoiceTime.length != 6) {
-      errors.add('taxInvoiceTime deve ter 6 dígitos (HHMMSS)');
-    }
-
-    if (!RegExp(r'^\d{6}$').hasMatch(taxInvoiceTime)) {
-      errors.add('taxInvoiceTime deve conter apenas dígitos');
     }
 
     // Validar operador

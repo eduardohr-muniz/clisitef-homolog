@@ -3,7 +3,7 @@ import 'package:agente_clisitef/agente_clisitef.dart';
 
 /// Widget responsável por exibir os campos mapeados da transação
 class TransactionFieldsCard extends StatelessWidget {
-  final PendingTransaction pendingTransaction;
+  final CapturaTardiaTransaction pendingTransaction;
 
   const TransactionFieldsCard({
     super.key,
