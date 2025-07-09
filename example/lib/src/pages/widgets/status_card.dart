@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 
 /// Widget responsável por exibir o status do serviço
 class StatusCard extends StatelessWidget {
-  final String statusMessage;
   final String sessionId;
   final bool hasPendingTransaction;
   final bool isTransactionFinalized;
 
   const StatusCard({
     super.key,
-    required this.statusMessage,
     required this.sessionId,
     required this.hasPendingTransaction,
     required this.isTransactionFinalized,
@@ -28,7 +26,6 @@ class StatusCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text('Status: $statusMessage'),
             if (sessionId.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text('SessionId: $sessionId'),

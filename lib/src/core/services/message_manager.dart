@@ -21,12 +21,12 @@ class MessageManager {
     _logCommand(commandId, message);
 
     switch (commandId) {
-      case 1: // Mensagem para o operador
-        messageCashier.value = message ?? '';
+      case 1: // Mensagem para o operador (PinPad)
+        messageOperator.value = message ?? '';
         break;
 
-      case 2: // Mensagem para o cliente
-        messageOperator.value = message ?? '';
+      case 2: // Mensagem para o cliente (visível para ambos)
+        messageCashier.value = message ?? '';
         break;
 
       case 3: // Mensagem para ambos
@@ -35,11 +35,11 @@ class MessageManager {
         break;
 
       case 11: // Remove mensagem do operador
-        messageCashier.value = '';
+        messageOperator.value = '';
         break;
 
       case 12: // Remove mensagem do cliente
-        messageOperator.value = '';
+        messageCashier.value = '';
         break;
 
       case 13: // Remove mensagem de ambos

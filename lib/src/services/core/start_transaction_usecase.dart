@@ -1,3 +1,4 @@
+import '../../core/services/message_manager.dart';
 import '../../models/transaction_data.dart';
 import '../../models/transaction_response.dart';
 import '../../models/clisitef_response.dart';
@@ -7,6 +8,7 @@ import '../../repositories/clisitef_repository.dart';
 /// Pode ser usado tanto pelo serviço normal quanto pelo pendente
 class StartTransactionUseCase {
   final CliSiTefRepository _repository;
+  final MessageManager _messageManager = MessageManager.instance;
 
   StartTransactionUseCase(this._repository);
 
@@ -169,9 +171,15 @@ class StartTransactionUseCase {
         return null;
       }
 
+      // Processar mensagens do MessageManager
+      if (response.command == 1 || response.command == 2 || response.command == 3) {
+        _messageManager.processCommand(response.command!, message: response.message);
+        return null; // Comandos de mensagem não precisam retornar dados
+      }
+
       switch (response.command) {
         case 0: // COMMAND_DISPLAY_MESSAGE
-          print('[StartTransactionUseCase] Exibindo mensagem: ${response.message}');
+          // Mensagem processada pelo MessageManager
           return null; // Não precisa retornar dados
 
         case 1: // COMMAND_COLLECT_AMOUNT

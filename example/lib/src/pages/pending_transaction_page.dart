@@ -7,6 +7,7 @@ import 'widgets/configuration_card.dart';
 import 'widgets/transaction_data_card.dart';
 import 'widgets/action_buttons_card.dart';
 import 'widgets/interaction_dialog.dart';
+import 'widgets/message_display_widget.dart';
 
 class PendingTransactionPage extends StatefulWidget {
   const PendingTransactionPage({super.key});
@@ -44,8 +45,6 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
       final pendingTransaction = await _controller.startPendingTransaction(_selectedTransactionType);
 
       if (pendingTransaction != null) {
-        _showMessage('Transação pendente iniciada!\nSessionId: ${pendingTransaction.sessionIdValue}');
-
         // Verificar se precisa de interação do usuário
         final response = pendingTransaction.originalResponse;
         if (response.command != null && response.shouldContinue) {
@@ -53,7 +52,7 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
         }
       }
     } catch (e) {
-      _showMessage('Erro: $e');
+      // Erro tratado pelo MessageManager
     }
   }
 
@@ -66,15 +65,12 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
         if (result.isServiceSuccess) {
           if (result.shouldContinue) {
             _showInteractionDialog(result);
-          } else {
-            _showMessage('Transação processada! Agora você pode confirmar.');
           }
-        } else {
-          _showMessage('Erro: ${result.errorMessage}');
+          // Mensagens tratadas pelo MessageManager
         }
       }
     } catch (e) {
-      _showMessage('Erro: $e');
+      // Erro tratado pelo MessageManager
     }
   }
 
@@ -82,16 +78,9 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
   Future<void> _confirmTransaction() async {
     try {
       final result = await _controller.confirmTransaction();
-
-      if (result != null) {
-        if (result.isServiceSuccess) {
-          _showMessage('Transação confirmada com sucesso!');
-        } else {
-          _showMessage('Erro ao confirmar: ${result.errorMessage}');
-        }
-      }
+      // Mensagens tratadas pelo MessageManager
     } catch (e) {
-      _showMessage('Erro: $e');
+      // Erro tratado pelo MessageManager
     }
   }
 
@@ -99,16 +88,9 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
   Future<void> _cancelTransaction() async {
     try {
       final result = await _controller.cancelTransaction();
-
-      if (result != null) {
-        if (result.isServiceSuccess) {
-          _showMessage('Transação cancelada com sucesso!');
-        } else {
-          _showMessage('Erro ao cancelar: ${result.errorMessage}');
-        }
-      }
+      // Mensagens tratadas pelo MessageManager
     } catch (e) {
-      _showMessage('Erro: $e');
+      // Erro tratado pelo MessageManager
     }
   }
 
@@ -116,9 +98,9 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
   Future<void> _simulateCupom() async {
     try {
       await _controller.simulateCupomEmission();
-      _showMessage('Cupom fiscal emitido! Agora você pode confirmar a transação.');
+      // Mensagens tratadas pelo MessageManager
     } catch (e) {
-      _showMessage('Erro: $e');
+      // Erro tratado pelo MessageManager
     }
   }
 
@@ -130,16 +112,6 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
       builder: (context) => InteractionDialog(
         response: response,
         onContinue: _continueTransaction,
-      ),
-    );
-  }
-
-  /// Exibe mensagem para o usuário
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -157,9 +129,12 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Message Display Widget
+            const MessageDisplayWidget(),
+            const SizedBox(height: 16),
+
             // Status Card
             StatusCard(
-              statusMessage: _controller.statusMessage,
               sessionId: _controller.sessionId,
               hasPendingTransaction: _controller.hasPendingTransaction,
               isTransactionFinalized: _controller.isTransactionFinalized,
@@ -224,8 +199,9 @@ class _PendingTransactionPageState extends State<PendingTransactionPage> {
                       '1. Configure os dados do servidor\n'
                       '2. Preencha os dados da transação\n'
                       '3. Clique em "Iniciar Transação Pendente"\n'
-                      '4. Simule a emissão do cupom fiscal\n'
-                      '5. Confirme ou cancele a transação',
+                      '4. Acompanhe as mensagens em tempo real\n'
+                      '5. Simule a emissão do cupom fiscal\n'
+                      '6. Confirme ou cancele a transação',
                     ),
                   ],
                 ),

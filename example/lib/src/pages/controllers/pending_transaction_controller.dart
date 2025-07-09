@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:agente_clisitef/agente_clisitef.dart';
+import 'package:agente_clisitef/src/core/services/message_manager.dart';
 
 /// Controller responsável por gerenciar o estado e lógica das transações pendentes
 class PendingTransactionController extends ChangeNotifier {
+  // MessageManager singleton
+  final MessageManager _messageManager = MessageManager.instance;
+
   // Estados
   bool _isLoading = false;
-  String _statusMessage = 'Pronto para transações pendentes';
   String _sessionId = '';
   CliSiTefServiceCapturaTardia? _service;
   PendingTransaction? _pendingTransaction;
@@ -20,7 +23,6 @@ class PendingTransactionController extends ChangeNotifier {
 
   // Getters
   bool get isLoading => _isLoading;
-  String get statusMessage => _statusMessage;
   String get sessionId => _sessionId;
   CliSiTefServiceCapturaTardia? get service => _service;
   PendingTransaction? get pendingTransaction => _pendingTransaction;
@@ -31,7 +33,7 @@ class PendingTransactionController extends ChangeNotifier {
   /// Inicializa o serviço de transação pendente
   Future<void> initializeService() async {
     _setLoading(true);
-    _updateStatus('Inicializando serviço pendente...');
+    _messageManager.messageCashier.value = 'Inicializando serviço pendente...';
 
     try {
       final config = _createConfig();
@@ -39,11 +41,15 @@ class PendingTransactionController extends ChangeNotifier {
       final initialized = await _service!.initialize();
 
       _setLoading(false);
-      _updateStatus(initialized ? 'Serviço pendente inicializado com sucesso' : 'Erro ao inicializar serviço');
+      if (initialized) {
+        _messageManager.messageCashier.value = '✅ Serviço pendente inicializado com sucesso';
+      } else {
+        _messageManager.processError(errorMessage: 'Erro ao inicializar serviço');
+      }
       _sessionId = _service?.currentSessionId ?? '';
     } catch (e) {
       _setLoading(false);
-      _updateStatus('Erro ao inicializar: $e');
+      _messageManager.processError(errorMessage: 'Erro ao inicializar: $e');
     }
   }
 
@@ -77,7 +83,7 @@ class PendingTransactionController extends ChangeNotifier {
     if (!_validateService()) return null;
 
     _setLoading(true);
-    _updateStatus('Iniciando transação pendente $transactionType...');
+    _messageManager.messageCashier.value = 'Iniciando transação pendente $transactionType...';
 
     try {
       final transactionData = _createTransactionData(transactionType);
@@ -90,24 +96,24 @@ class PendingTransactionController extends ChangeNotifier {
       _pendingTransaction = pendingTransaction;
       _sessionId = pendingTransaction.sessionIdValue;
       _setLoading(false);
-      _updateStatus('✅ Transação pendente iniciada!\nAguardando interação do usuário...');
+      _messageManager.messageCashier.value = '✅ Transação pendente iniciada!\nAguardando interação do usuário...';
 
       return pendingTransaction;
     } catch (e) {
       if (e is CliSiTefException) {
         if (e.isCancellation) {
           if (e.isOperatorCancellation) {
-            print('Operador cancelou a operação');
+            _messageManager.messageCashier.value = '❌ Operador cancelou a operação';
           } else if (e.isUserCancellation) {
-            print('Usuário cancelou no pinpad');
+            _messageManager.messageCashier.value = '❌ Usuário cancelou no pinpad';
           } else if (e.isAutomationCancellation) {
-            print('Sistema cancelou automaticamente');
+            _messageManager.messageCashier.value = '❌ Sistema cancelou automaticamente';
           }
         }
       }
 
       _setLoading(false);
-      _updateStatus('Erro na transação pendente: $e');
+      _messageManager.processError(errorMessage: 'Erro na transação pendente: $e');
       rethrow;
     }
   }
@@ -133,7 +139,7 @@ class PendingTransactionController extends ChangeNotifier {
     if (!_validatePendingTransaction()) return null;
 
     _setLoading(true);
-    _updateStatus('Processando interação do usuário...');
+    _messageManager.messageCashier.value = 'Processando interação do usuário...';
 
     try {
       final response = _pendingTransaction!.originalResponse;
@@ -146,18 +152,18 @@ class PendingTransactionController extends ChangeNotifier {
 
       if (result.isServiceSuccess) {
         if (result.shouldContinue) {
-          _updateStatus('Aguardando mais interação...');
+          _messageManager.messageCashier.value = 'Aguardando mais interação...';
         } else {
-          _updateStatus('✅ Transação processada com sucesso!\nPronta para confirmação.');
+          _messageManager.messageCashier.value = '✅ Transação processada com sucesso!\nPronta para confirmação.';
         }
         return result;
       } else {
-        _updateStatus('❌ Erro ao processar: ${result.errorMessage}');
+        _messageManager.processError(errorMessage: 'Erro ao processar: ${result.errorMessage}');
         return result;
       }
     } catch (e) {
       _setLoading(false);
-      _updateStatus('Erro ao processar: $e');
+      _messageManager.processError(errorMessage: 'Erro ao processar: $e');
       rethrow;
     }
   }
@@ -168,7 +174,7 @@ class PendingTransactionController extends ChangeNotifier {
     if (_isTransactionFinalized()) return null;
 
     _setLoading(true);
-    _updateStatus('Confirmando transação...');
+    _messageManager.messageCashier.value = 'Confirmando transação...';
 
     try {
       final result = await _pendingTransaction!.confirm(
@@ -180,15 +186,15 @@ class PendingTransactionController extends ChangeNotifier {
       _setLoading(false);
 
       if (result.isServiceSuccess) {
-        _updateStatus('✅ Transação confirmada com sucesso!\nStatus: ${result.clisitefStatus}');
+        _messageManager.messageCashier.value = '✅ Transação confirmada com sucesso!\nStatus: ${result.clisitefStatus}';
       } else {
-        _updateStatus('❌ Erro ao confirmar: ${result.errorMessage}');
+        _messageManager.processError(errorMessage: 'Erro ao confirmar: ${result.errorMessage}');
       }
 
       return result;
     } catch (e) {
       _setLoading(false);
-      _updateStatus('Erro ao confirmar: $e');
+      _messageManager.processError(errorMessage: 'Erro ao confirmar: $e');
       rethrow;
     }
   }
@@ -199,7 +205,7 @@ class PendingTransactionController extends ChangeNotifier {
     if (_isTransactionFinalized()) return null;
 
     _setLoading(true);
-    _updateStatus('Cancelando transação...');
+    _messageManager.messageCashier.value = 'Cancelando transação...';
 
     try {
       final result = await _pendingTransaction!.cancel(
@@ -211,15 +217,15 @@ class PendingTransactionController extends ChangeNotifier {
       _setLoading(false);
 
       if (result.isServiceSuccess) {
-        _updateStatus('✅ Transação cancelada com sucesso!\nStatus: ${result.clisitefStatus}');
+        _messageManager.messageCashier.value = '✅ Transação cancelada com sucesso!\nStatus: ${result.clisitefStatus}';
       } else {
-        _updateStatus('❌ Erro ao cancelar: ${result.errorMessage}');
+        _messageManager.processError(errorMessage: 'Erro ao cancelar: ${result.errorMessage}');
       }
 
       return result;
     } catch (e) {
       _setLoading(false);
-      _updateStatus('Erro ao cancelar: $e');
+      _messageManager.processError(errorMessage: 'Erro ao cancelar: $e');
       rethrow;
     }
   }
@@ -227,19 +233,19 @@ class PendingTransactionController extends ChangeNotifier {
   /// Simula a emissão de cupom fiscal
   Future<void> simulateCupomEmission() async {
     _setLoading(true);
-    _updateStatus('Simulando emissão de cupom fiscal...');
+    _messageManager.messageCashier.value = 'Simulando emissão de cupom fiscal...';
 
     // Simula tempo de emissão do cupom
     await Future.delayed(const Duration(seconds: 2));
 
     _setLoading(false);
-    _updateStatus('✅ Cupom fiscal emitido com sucesso!\nAgora você pode confirmar a transação.');
+    _messageManager.messageCashier.value = '✅ Cupom fiscal emitido com sucesso!\nAgora você pode confirmar a transação.';
   }
 
   /// Valida se o serviço está inicializado
   bool _validateService() {
     if (_service == null || !_service!.isInitialized) {
-      _updateStatus('Serviço não inicializado');
+      _messageManager.processError(errorMessage: 'Serviço não inicializado');
       return false;
     }
     return true;
@@ -248,7 +254,7 @@ class PendingTransactionController extends ChangeNotifier {
   /// Valida se há uma transação pendente
   bool _validatePendingTransaction() {
     if (_pendingTransaction == null) {
-      _updateStatus('Nenhuma transação pendente');
+      _messageManager.processError(errorMessage: 'Nenhuma transação pendente');
       return false;
     }
     return true;
@@ -257,7 +263,7 @@ class PendingTransactionController extends ChangeNotifier {
   /// Verifica se a transação está finalizada
   bool _isTransactionFinalized() {
     if (_pendingTransaction!.isFinalized) {
-      _updateStatus('Transação já foi finalizada');
+      _messageManager.processError(errorMessage: 'Transação já foi finalizada');
       return true;
     }
     return false;
@@ -269,17 +275,11 @@ class PendingTransactionController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Atualiza a mensagem de status
-  void _updateStatus(String message) {
-    _statusMessage = message;
-    notifyListeners();
-  }
-
   /// Limpa o estado da transação
   void clearTransaction() {
     _pendingTransaction = null;
     _sessionId = '';
-    _updateStatus('Pronto para transações pendentes');
+    _messageManager.messageCashier.value = 'Pronto para transações pendentes';
   }
 
   /// Libera recursos
