@@ -61,7 +61,7 @@ class PasswordReadResult {
 class CliSiTefPinPadService {
   final CliSiTefRepository _repository;
   final CliSiTefConfig _config;
-  final MessageManager _messageManager = MessageManager.instance;
+  final AgenteClisitefMessageManager _messageManager = AgenteClisitefMessageManager.instance;
 
   bool _isInitialized = false;
   bool _isPinPadPresent = false;
@@ -402,5 +402,5 @@ class CliSiTefPinPadService {
   String get currentMessage => _currentMessage;
 
   /// Obtém o MessageManager
-  MessageManager get messageManager => _messageManager;
+  AgenteClisitefMessageManager get messageManager => _messageManager;
 }

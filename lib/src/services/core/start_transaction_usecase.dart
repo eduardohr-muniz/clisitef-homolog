@@ -8,7 +8,7 @@ import '../../repositories/clisitef_repository.dart';
 /// Pode ser usado tanto pelo serviço normal quanto pelo pendente
 class StartTransactionUseCase {
   final CliSiTefRepository _repository;
-  final MessageManager _messageManager = MessageManager.instance;
+  final AgenteClisitefMessageManager _messageManager = AgenteClisitefMessageManager.instance;
 
   StartTransactionUseCase(this._repository);
 

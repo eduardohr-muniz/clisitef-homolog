@@ -11,7 +11,7 @@ import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 class CliSiTefCoreService {
   final CliSiTefRepository _repository;
   final CliSiTefConfig _config;
-  final MessageManager _messageManager = MessageManager.instance;
+  final AgenteClisitefMessageManager _messageManager = AgenteClisitefMessageManager.instance;
 
   bool _isInitialized = false;
   bool _isTransactionInProgress = false;
@@ -197,5 +197,5 @@ class CliSiTefCoreService {
   CliSiTefConfig get config => _config;
 
   /// Obtém o MessageManager
-  MessageManager get messageManager => _messageManager;
+  AgenteClisitefMessageManager get messageManager => _messageManager;
 }

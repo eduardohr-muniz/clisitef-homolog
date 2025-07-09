@@ -17,7 +17,7 @@ class CliSiTefServiceAgente {
   late final CliSiTefRepository _repository;
   late final CliSiTefCoreService _coreService;
   late final CliSiTefPinPadService _pinpadService;
-  final MessageManager _messageManager = MessageManager.instance;
+  final AgenteClisitefMessageManager _messageManager = AgenteClisitefMessageManager.instance;
 
   final CliSiTefConfig _config;
   bool _isInitialized = false;
@@ -141,7 +141,7 @@ class CliSiTefServiceAgente {
   CliSiTefRepository get repository => _repository;
 
   /// Obtém o MessageManager
-  MessageManager get messageManager => _messageManager;
+  AgenteClisitefMessageManager get messageManager => _messageManager;
 
   /// Inicia uma transação manualmente
   Future<TransactionResponse> startTransaction(TransactionData data) async {

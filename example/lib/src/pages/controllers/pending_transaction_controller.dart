@@ -5,7 +5,7 @@ import 'package:agente_clisitef/src/core/services/message_manager.dart';
 /// Controller responsável por gerenciar o estado e lógica das transações pendentes
 class PendingTransactionController extends ChangeNotifier {
   // MessageManager singleton
-  final MessageManager _messageManager = MessageManager.instance;
+  final AgenteClisitefMessageManager _messageManager = AgenteClisitefMessageManager.instance;
 
   // Estados
   bool _isLoading = false;

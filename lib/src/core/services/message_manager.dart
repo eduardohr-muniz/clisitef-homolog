@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 
 /// Singleton responsável por gerenciar as mensagens do operador e caixa
 /// Permite atualizações em tempo real das mensagens através de ValueNotifiers
-class MessageManager {
-  static final MessageManager _instance = MessageManager._internal();
-  factory MessageManager() => _instance;
-  MessageManager._internal();
+class AgenteClisitefMessageManager {
+  static final AgenteClisitefMessageManager _instance = AgenteClisitefMessageManager._internal();
+  factory AgenteClisitefMessageManager() => _instance;
+  AgenteClisitefMessageManager._internal();
 
   /// Getter global para acessar a instância do MessageManager
-  static MessageManager get instance => _instance;
+  static AgenteClisitefMessageManager get instance => _instance;
 
   /// Mensagem para o caixa (operador)
   final ValueNotifier<String> messageCashier = ValueNotifier<String>('');

@@ -37,7 +37,7 @@ class MessageDisplayWidget extends StatelessWidget {
               title: 'Mensagem do Caixa',
               icon: Icons.person,
               color: Colors.green,
-              messageNotifier: MessageManager.instance.messageCashier,
+              messageNotifier: AgenteClisitefMessageManager.instance.messageCashier,
             ),
 
             const SizedBox(height: 12),
@@ -48,7 +48,7 @@ class MessageDisplayWidget extends StatelessWidget {
               title: 'Mensagem do Operador',
               icon: Icons.credit_card,
               color: Colors.orange,
-              messageNotifier: MessageManager.instance.messageOperator,
+              messageNotifier: AgenteClisitefMessageManager.instance.messageOperator,
             ),
           ],
         ),
