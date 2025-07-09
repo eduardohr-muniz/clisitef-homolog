@@ -5,6 +5,7 @@ library agente_clisitef;
 // Core
 export 'src/core/constants/clisitef_constants.dart';
 export 'src/core/exceptions/clisitef_exception.dart';
+export 'src/core/services/message_manager.dart';
 
 // Models
 export 'src/models/clisitef_config.dart';

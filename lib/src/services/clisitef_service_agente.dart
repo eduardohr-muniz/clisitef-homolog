@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
+import 'package:agente_clisitef/src/core/services/message_manager.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/clisitef_response.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
@@ -16,6 +17,7 @@ class CliSiTefServiceAgente {
   late final CliSiTefRepository _repository;
   late final CliSiTefCoreService _coreService;
   late final CliSiTefPinPadService _pinpadService;
+  final MessageManager _messageManager = MessageManager.instance;
 
   final CliSiTefConfig _config;
   bool _isInitialized = false;
@@ -40,20 +42,24 @@ class CliSiTefServiceAgente {
   Future<bool> initialize() async {
     try {
       print('[CliSiTefAgente] Inicializando serviço...');
+      _messageManager.messageCashier.value = 'Inicializando serviço...';
 
       // Validar configuração
       final errors = _config.validate();
       if (errors.isNotEmpty) {
         print('[CliSiTefAgente] Erros de validação: ${errors.join(', ')}');
+        _messageManager.processError(errorMessage: 'Erros de validação: ${errors.join(', ')}');
         return false;
       }
 
       // Criar sessão
       print('[CliSiTefAgente] Criando sessão...');
+      _messageManager.messageCashier.value = 'Criando sessão...';
       final sessionResponse = await _repository.createSession();
 
       if (!sessionResponse.isServiceSuccess) {
         print('[CliSiTefAgente] Erro ao criar sessão: ${sessionResponse.errorMessage}');
+        _messageManager.processError(errorMessage: 'Erro ao criar sessão: ${sessionResponse.errorMessage}');
         return false;
       }
 
@@ -61,9 +67,11 @@ class CliSiTefServiceAgente {
       _isInitialized = true;
 
       print('[CliSiTefAgente] Serviço inicializado com sucesso. SessionId: $_currentSessionId');
+      _messageManager.messageCashier.value = '✅ Serviço inicializado com sucesso';
       return true;
     } catch (e) {
       print('[CliSiTefAgente] Erro ao inicializar serviço: $e');
+      _messageManager.processError(errorMessage: 'Erro ao inicializar serviço: $e');
       return false;
     }
   }
@@ -131,6 +139,9 @@ class CliSiTefServiceAgente {
 
   /// Obtém o repositório (para controle manual do fluxo)
   CliSiTefRepository get repository => _repository;
+
+  /// Obtém o MessageManager
+  MessageManager get messageManager => _messageManager;
 
   /// Inicia uma transação manualmente
   Future<TransactionResponse> startTransaction(TransactionData data) async {

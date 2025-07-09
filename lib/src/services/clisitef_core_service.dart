@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:agente_clisitef/src/core/constants/clisitef_constants.dart';
+import 'package:agente_clisitef/src/core/services/message_manager.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/models/transaction_data.dart';
 import 'package:agente_clisitef/src/models/transaction_response.dart';
@@ -10,6 +11,7 @@ import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 class CliSiTefCoreService {
   final CliSiTefRepository _repository;
   final CliSiTefConfig _config;
+  final MessageManager _messageManager = MessageManager.instance;
 
   bool _isInitialized = false;
   bool _isTransactionInProgress = false;
@@ -26,9 +28,11 @@ class CliSiTefCoreService {
     // Apenas valida a configuração localmente
     final errors = _config.validate();
     if (errors.isNotEmpty) {
+      _messageManager.processError(errorMessage: 'Erros de validação: ${errors.join(', ')}');
       return false;
     }
     _isInitialized = true;
+    _messageManager.messageCashier.value = '✅ Configuração validada com sucesso';
     return true;
   }
 
@@ -36,6 +40,7 @@ class CliSiTefCoreService {
   Future<TransactionResult> executeTransaction(TransactionData transactionData) async {
     try {
       if (!_isInitialized) {
+        _messageManager.processError(errorMessage: 'Módulo não inicializado');
         return TransactionResult.error(
           statusCode: -1,
           message: 'Módulo não inicializado',
@@ -43,6 +48,7 @@ class CliSiTefCoreService {
       }
 
       if (_isTransactionInProgress) {
+        _messageManager.processError(errorMessage: 'Transação já em andamento');
         return TransactionResult.error(
           statusCode: -12,
           message: 'Transação já em andamento',
@@ -50,6 +56,7 @@ class CliSiTefCoreService {
       }
 
       _isTransactionInProgress = true;
+      _messageManager.messageCashier.value = '🚀 Iniciando transação...';
 
       // Validar dados da transação
       final errors = transactionData.validate();
@@ -188,4 +195,7 @@ class CliSiTefCoreService {
 
   /// Obtém a configuração
   CliSiTefConfig get config => _config;
+
+  /// Obtém o MessageManager
+  MessageManager get messageManager => _messageManager;
 }

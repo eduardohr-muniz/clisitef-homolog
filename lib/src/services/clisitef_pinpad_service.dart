@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:agente_clisitef/src/core/services/message_manager.dart';
 import 'package:agente_clisitef/src/models/clisitef_config.dart';
 import 'package:agente_clisitef/src/repositories/clisitef_repository.dart';
 
@@ -60,6 +61,7 @@ class PasswordReadResult {
 class CliSiTefPinPadService {
   final CliSiTefRepository _repository;
   final CliSiTefConfig _config;
+  final MessageManager _messageManager = MessageManager.instance;
 
   bool _isInitialized = false;
   bool _isPinPadPresent = false;
@@ -75,9 +77,11 @@ class CliSiTefPinPadService {
   Future<bool> initialize() async {
     try {
       print('[CliSiTefPinPad] Inicializando serviço PinPad...');
+      _messageManager.messageCashier.value = 'Inicializando PinPad...';
 
       if (!_repository.isInitialized) {
         print('[CliSiTefPinPad] Repositório não inicializado');
+        _messageManager.processError(errorMessage: 'Repositório não inicializado');
         return false;
       }
 
@@ -86,19 +90,23 @@ class CliSiTefPinPadService {
 
       if (_isPinPadPresent) {
         print('[CliSiTefPinPad] PinPad detectado');
+        _messageManager.messageCashier.value = '✅ PinPad detectado';
 
         // Definir mensagem padrão
         await setMessage('Aguardando cartão...');
 
         _isInitialized = true;
         print('[CliSiTefPinPad] Serviço PinPad inicializado com sucesso');
+        _messageManager.messageCashier.value = '✅ PinPad inicializado com sucesso';
         return true;
       } else {
         print('[CliSiTefPinPad] PinPad não detectado');
+        _messageManager.processError(errorMessage: 'PinPad não detectado');
         return false;
       }
     } catch (e) {
       print('[CliSiTefPinPad] Erro ao inicializar serviço PinPad: $e');
+      _messageManager.processError(errorMessage: 'Erro ao inicializar PinPad: $e');
       return false;
     }
   }
@@ -126,27 +134,33 @@ class CliSiTefPinPadService {
     try {
       if (!_repository.isInitialized) {
         print('[CliSiTefPinPad] Repositório não inicializado');
+        _messageManager.processError(errorMessage: 'Repositório não inicializado');
         return -1;
       }
 
       if (message.length > 40) {
         print('[CliSiTefPinPad] Mensagem muito longa para o PinPad');
+        _messageManager.processError(errorMessage: 'Mensagem muito longa para o PinPad');
         return -1;
       }
 
       print('[CliSiTefPinPad] Definindo mensagem no PinPad: "$message"');
+      _messageManager.messageOperator.value = message;
       final result = await _repository.setPinPadMessage(message);
 
       if (result == 0) {
         _currentMessage = message;
         print('[CliSiTefPinPad] Mensagem definida com sucesso');
+        _messageManager.messageCashier.value = '✅ Mensagem definida no PinPad';
       } else {
         print('[CliSiTefPinPad] Erro ao definir mensagem: $result');
+        _messageManager.processError(errorMessage: 'Erro ao definir mensagem: $result');
       }
 
       return result;
     } catch (e) {
       print('[CliSiTefPinPad] Erro inesperado ao definir mensagem: $e');
+      _messageManager.processError(errorMessage: 'Erro ao definir mensagem: $e');
       return -1;
     }
   }
@@ -386,4 +400,7 @@ class CliSiTefPinPadService {
 
   /// Obtém a mensagem atual do PinPad
   String get currentMessage => _currentMessage;
+
+  /// Obtém o MessageManager
+  MessageManager get messageManager => _messageManager;
 }
